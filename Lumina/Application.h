@@ -3,6 +3,8 @@
 #define GLFW_INCLUDE_NONE
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
+#include "TitleBarLayout.h"
+#include <vector>
 
 class Application {
 public:
@@ -12,15 +14,16 @@ public:
 
     // Destructeur
     ~Application();
-
     // Méthodes publiques
-    void Run(int width, int height, bool customTitlebar = true);
+    void Run();
+    void RenderLayouts();
     bool IsTitleBarHovered() const { return m_TitleBarHovered; }
+    void AddLayout(Layout* layout); // Méthode pour ajouter un layout
+    GLFWwindow *GetWindowHandle() const;
+
+    void InitializeWindow(int width, int height, bool customTitlebar);
 
 private:
-    // Méthodes privées
-    static void UpdateFrame();
-
     // Variables membres
     int largeurFenetre;
     int hauteurFenetre;
@@ -31,6 +34,8 @@ private:
     bool isDragging = false; // Variable pour suivre l'état de glissement
 
     GLFWwindow* m_WindowHandle;
+    std::vector<Layout*> layouts;
+
 };
 
 #endif // APPLICATION_H

@@ -369,21 +369,21 @@ static void FramePresent(ImGui_ImplVulkanH_Window* wd)
     wd->SemaphoreIndex = (wd->SemaphoreIndex + 1) % wd->SemaphoreCount; // Now we can use the next set of semaphores
 }
 
-// Destructeur
+Application::Application(int largeur, int hauteur)
+    : largeurFenetre(largeur), hauteurFenetre(hauteur), IsHoveredTitleBar(false),
+      CustomTitlebar(false), m_TitleBarHovered(false), m_WindowHandle(nullptr) {
+}
+
 Application::~Application() {
+    for (auto layout : layouts) {
+        delete layout;
+    }
+
     if (m_WindowHandle) {
         glfwDestroyWindow(m_WindowHandle);
     }
     glfwTerminate();
 }
-
-Application::Application(int largeur, int hauteur)
-    : largeurFenetre(largeur), hauteurFenetre(hauteur), IsHoveredTitleBar(false), CustomTitlebar(false),
-      m_TitleBarHovered(false),
-      m_WindowHandle(nullptr)
-      {
-}
-
 
 std::string obtenirCheminAbsolu(const std::string& cheminRelatif) {
     try {
@@ -394,11 +394,84 @@ std::string obtenirCheminAbsolu(const std::string& cheminRelatif) {
         return {};
     }
 }
+void Application::Run() {
+    ImVec4 clear_color = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);  // Couleur blanche
 
-void Application::Run(const int width,const int height,const bool customTitlebar) {
+    // Boucle principale
+    while (!glfwWindowShouldClose(m_WindowHandle)) {
+        glfwPollEvents();
+
+        // Vérifier la taille du swap chain
+        int fb_width, fb_height;
+        glfwGetFramebufferSize(m_WindowHandle, &fb_width, &fb_height);
+        if (fb_width > 0 && fb_height > 0 && (g_SwapChainRebuild || g_MainWindowData.Width != fb_width || g_MainWindowData.Height != fb_height)) {
+            // Mettre à jour la taille du swap chain
+            ImGui_ImplVulkan_SetMinImageCount(g_MinImageCount);
+            ImGui_ImplVulkanH_CreateOrResizeWindow(g_Instance, g_PhysicalDevice, g_Device, &g_MainWindowData, g_QueueFamily, g_Allocator, fb_width, fb_height, g_MinImageCount);
+            g_MainWindowData.FrameIndex = 0;
+            g_SwapChainRebuild = false;
+
+            // Mettre à jour les dimensions des layouts
+            for (auto& layout : layouts) {
+                layout->UpdateSize(fb_width, fb_height);
+            }
+        }
+
+        if (glfwGetWindowAttrib(m_WindowHandle, GLFW_ICONIFIED) != 0) {
+            ImGui_ImplGlfw_Sleep(10);
+            continue;
+        }
+
+        // Commencer une nouvelle frame ImGui
+        ImGui_ImplVulkan_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        RenderLayouts();
+
+        // Rendu
+        ImGui::Render();
+        ImDrawData* draw_data = ImGui::GetDrawData();
+        const bool is_minimized = (draw_data->DisplaySize.x <= 0.0f || draw_data->DisplaySize.y <= 0.0f);
+
+        if (!is_minimized) {
+            ImGui_ImplVulkanH_Window* wd = &g_MainWindowData;
+            wd->ClearValue.color.float32[0] = clear_color.x * clear_color.w;
+            wd->ClearValue.color.float32[1] = clear_color.y * clear_color.w;
+            wd->ClearValue.color.float32[2] = clear_color.z * clear_color.w;
+            wd->ClearValue.color.float32[3] = clear_color.w;
+            FrameRender(wd, draw_data);
+            FramePresent(wd);
+        }
+    }
+
+    // Nettoyage
+    ImGui_ImplVulkan_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+    CleanupVulkanWindow();
+    CleanupVulkan();
+}
+
+void Application::RenderLayouts() {
+    for (auto& layout : layouts) {
+        layout->Draw();
+    }
+}
+
+void Application::AddLayout(Layout* layout) {
+    layouts.push_back(layout);
+}
+
+GLFWwindow* Application::GetWindowHandle() const {
+    return m_WindowHandle;
+}
+
+void Application::InitializeWindow(int width, int height, bool customTitlebar) {
     largeurFenetre = width;
     hauteurFenetre = height;
     CustomTitlebar = customTitlebar;
+    g_MainWindowData.Width = largeurFenetre;
 
     glfwSetErrorCallback(glfw_error_callback);
 
@@ -410,28 +483,38 @@ void Application::Run(const int width,const int height,const bool customTitlebar
 
     // Créer la fenêtre avec contexte Vulkan
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    // Cacher la fenêtre aux debut pour éviter de voir lors de la création / positionnement
     glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
     glfwWindowHint(GLFW_TITLEBAR, CustomTitlebar ? GLFW_FALSE : GLFW_TRUE);
 
-    m_WindowHandle = glfwCreateWindow(width, height, "Photon", nullptr, nullptr);
+    // Crée la fenêtre GLFW
+    m_WindowHandle = glfwCreateWindow(width, height, "MyApp Window", nullptr, nullptr);
     if (!m_WindowHandle) {
+        std::cerr << "Failed to create GLFW window" << std::endl;
+        std::cerr << "GLFW Error: " << glfwGetError(NULL) << std::endl;
         glfwTerminate();
-        // Gestion des erreurs
-        return;
+        throw std::runtime_error("Failed to create GLFW window");
     }
 
+    // Assure-toi que la fenêtre est visible
+    glfwShowWindow(m_WindowHandle);
+
     // Initialiser Vulkan
-    ImVector<const char *> extensions;
+    ImVector<const char*> extensions;
     uint32_t extensions_count = 0;
     const char** glfw_extensions = glfwGetRequiredInstanceExtensions(&extensions_count);
-    for (uint32_t i = 0; i < extensions_count; i++)
+    for (uint32_t i = 0; i < extensions_count; i++) {
         extensions.push_back(glfw_extensions[i]);
+    }
+
     SetupVulkan(extensions);
 
     // Créer la surface de la fenêtre Vulkan
     VkSurfaceKHR surface;
     VkResult err = glfwCreateWindowSurface(g_Instance, m_WindowHandle, g_Allocator, &surface);
+    if (err != VK_SUCCESS) {
+        std::cerr << "Failed to create Vulkan surface: " << err << std::endl;
+        throw std::runtime_error("Failed to create Vulkan surface");
+    }
     check_vk_result(err);
 
     // Configurer les buffers de l'image
@@ -455,11 +538,8 @@ void Application::Run(const int width,const int height,const bool customTitlebar
     // Initialiser ImGui
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
-
-    const std::string FontFile = obtenirCheminAbsolu(R"(../font/Roboto-Regular.ttf)");
-    io.Fonts->AddFontFromFileTTF(FontFile.c_str(), 16.0f);
-
+    ImGuiIO& io = ImGui::GetIO();
+    io.Fonts->AddFontFromFileTTF(obtenirCheminAbsolu(R"(../font/Roboto-Regular.ttf)").c_str(), 16.0f);
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
     ImGui::StyleColorsDark();
@@ -483,60 +563,10 @@ void Application::Run(const int width,const int height,const bool customTitlebar
     init_info.CheckVkResultFn = check_vk_result;
     ImGui_ImplVulkan_Init(&init_info);
 
-    // Couleur de fond
-    ImVec4 clear_color = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);  // Couleur blanche
-
-
     glfwSetWindowUserPointer(m_WindowHandle, this);
 
     glfwSetTitlebarHitTestCallback(m_WindowHandle, [](GLFWwindow* window, int x, int y, int* hit) {
-        const auto* app = static_cast<Application *>(glfwGetWindowUserPointer(window));
+        const auto* app = static_cast<Application*>(glfwGetWindowUserPointer(window));
         *hit = app->IsTitleBarHovered();
     });
-
-    // Boucle principale
-    while (!glfwWindowShouldClose(m_WindowHandle)) {
-        glfwPollEvents();
-
-        // Vérifier la taille du swap chain
-        int fb_width, fb_height;
-        glfwGetFramebufferSize(m_WindowHandle, &fb_width, &fb_height);
-        if (fb_width > 0 && fb_height > 0 && (g_SwapChainRebuild || g_MainWindowData.Width != fb_width || g_MainWindowData.Height != fb_height)) {
-            ImGui_ImplVulkan_SetMinImageCount(g_MinImageCount);
-            ImGui_ImplVulkanH_CreateOrResizeWindow(g_Instance, g_PhysicalDevice, g_Device, &g_MainWindowData, g_QueueFamily, g_Allocator, fb_width, fb_height, g_MinImageCount);
-            g_MainWindowData.FrameIndex = 0;
-            g_SwapChainRebuild = false;
-        }
-
-        if (glfwGetWindowAttrib(m_WindowHandle, GLFW_ICONIFIED) != 0) {
-            ImGui_ImplGlfw_Sleep(10);
-            continue;
-        }
-
-        // Commencer une nouvelle frame ImGui
-        ImGui_ImplVulkan_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
-
-        // Rendu
-        ImGui::Render();
-        ImDrawData* draw_data = ImGui::GetDrawData();
-        const bool is_minimized = (draw_data->DisplaySize.x <= 0.0f || draw_data->DisplaySize.y <= 0.0f);
-
-        if (!is_minimized) {
-            wd->ClearValue.color.float32[0] = clear_color.x * clear_color.w;
-            wd->ClearValue.color.float32[1] = clear_color.y * clear_color.w;
-            wd->ClearValue.color.float32[2] = clear_color.z * clear_color.w;
-            wd->ClearValue.color.float32[3] = clear_color.w;
-            FrameRender(wd, draw_data);
-            FramePresent(wd);
-        }
-    }
-
-    // Nettoyage
-    ImGui_ImplVulkan_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
-    CleanupVulkanWindow();
-    CleanupVulkan();
 }

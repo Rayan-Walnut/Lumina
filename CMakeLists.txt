@@ -17,7 +17,11 @@ file(GLOB_RECURSE SOURCES src/*.cpp)
 # Ajouter l'exécutable
 add_executable(${PROJECT_NAME} ${SOURCES} main.cpp
         Lumina/Application.h
-        Lumina/Application.cpp)
+        Lumina/Application.cpp
+        Lumina/Layout.h
+        Lumina/Layout.cpp
+        Lumina/TitleBarLayout.h
+        Lumina/TitleBarLayout.cpp)
 
 # Ajouter les options pour une application console
 set_target_properties(${PROJECT_NAME} PROPERTIES WIN32_EXECUTABLE OFF)

@@ -63,6 +63,20 @@ build CMakeFiles/MyApp.dir/Lumina/Application.cpp.obj: CXX_COMPILER__MyApp_unsca
   OBJECT_DIR = CMakeFiles\MyApp.dir
   OBJECT_FILE_DIR = CMakeFiles\MyApp.dir\Lumina
 
+build CMakeFiles/MyApp.dir/Lumina/Layout.cpp.obj: CXX_COMPILER__MyApp_unscanned_Debug C$:/Users/Rayan/Desktop/MyApp/Lumina/Layout.cpp || cmake_object_order_depends_target_MyApp
+  DEP_FILE = CMakeFiles\MyApp.dir\Lumina\Layout.cpp.obj.d
+  FLAGS = -g -std=gnu++17 -fdiagnostics-color=always
+  INCLUDES = -IC:/Users/Rayan/Desktop/MyApp/vendor/imgui -IC:/Users/Rayan/Desktop/MyApp/vendor/imgui/backends -IC:/Users/Rayan/Desktop/MyApp/vendor/GLFW/include -isystem C:/VulkanSDK/1.3.290.0/Include
+  OBJECT_DIR = CMakeFiles\MyApp.dir
+  OBJECT_FILE_DIR = CMakeFiles\MyApp.dir\Lumina
+
+build CMakeFiles/MyApp.dir/Lumina/TitleBarLayout.cpp.obj: CXX_COMPILER__MyApp_unscanned_Debug C$:/Users/Rayan/Desktop/MyApp/Lumina/TitleBarLayout.cpp || cmake_object_order_depends_target_MyApp
+  DEP_FILE = CMakeFiles\MyApp.dir\Lumina\TitleBarLayout.cpp.obj.d
+  FLAGS = -g -std=gnu++17 -fdiagnostics-color=always
+  INCLUDES = -IC:/Users/Rayan/Desktop/MyApp/vendor/imgui -IC:/Users/Rayan/Desktop/MyApp/vendor/imgui/backends -IC:/Users/Rayan/Desktop/MyApp/vendor/GLFW/include -isystem C:/VulkanSDK/1.3.290.0/Include
+  OBJECT_DIR = CMakeFiles\MyApp.dir
+  OBJECT_FILE_DIR = CMakeFiles\MyApp.dir\Lumina
+
 build CMakeFiles/MyApp.dir/vendor/imgui/backends/imgui_impl_glfw.cpp.obj: CXX_COMPILER__MyApp_unscanned_Debug C$:/Users/Rayan/Desktop/MyApp/vendor/imgui/backends/imgui_impl_glfw.cpp || cmake_object_order_depends_target_MyApp
   DEP_FILE = CMakeFiles\MyApp.dir\vendor\imgui\backends\imgui_impl_glfw.cpp.obj.d
   FLAGS = -g -std=gnu++17 -fdiagnostics-color=always
@@ -120,7 +134,7 @@ build CMakeFiles/MyApp.dir/vendor/imgui/imgui_widgets.cpp.obj: CXX_COMPILER__MyA
 #############################################
 # Link the executable MyApp.exe
 
-build MyApp.exe: CXX_EXECUTABLE_LINKER__MyApp_Debug CMakeFiles/MyApp.dir/main.cpp.obj CMakeFiles/MyApp.dir/Lumina/Application.cpp.obj CMakeFiles/MyApp.dir/vendor/imgui/backends/imgui_impl_glfw.cpp.obj CMakeFiles/MyApp.dir/vendor/imgui/backends/imgui_impl_vulkan.cpp.obj CMakeFiles/MyApp.dir/vendor/imgui/imgui.cpp.obj CMakeFiles/MyApp.dir/vendor/imgui/imgui_demo.cpp.obj CMakeFiles/MyApp.dir/vendor/imgui/imgui_draw.cpp.obj CMakeFiles/MyApp.dir/vendor/imgui/imgui_tables.cpp.obj CMakeFiles/MyApp.dir/vendor/imgui/imgui_widgets.cpp.obj | vendor/GLFW/src/libglfw3.a C$:/VulkanSDK/1.3.290.0/Lib/vulkan-1.lib vendor/GLFW/src/libglfw3.a C$:/VulkanSDK/1.3.290.0/Lib/vulkan-1.lib || vendor/GLFW/src/libglfw3.a
+build MyApp.exe: CXX_EXECUTABLE_LINKER__MyApp_Debug CMakeFiles/MyApp.dir/main.cpp.obj CMakeFiles/MyApp.dir/Lumina/Application.cpp.obj CMakeFiles/MyApp.dir/Lumina/Layout.cpp.obj CMakeFiles/MyApp.dir/Lumina/TitleBarLayout.cpp.obj CMakeFiles/MyApp.dir/vendor/imgui/backends/imgui_impl_glfw.cpp.obj CMakeFiles/MyApp.dir/vendor/imgui/backends/imgui_impl_vulkan.cpp.obj CMakeFiles/MyApp.dir/vendor/imgui/imgui.cpp.obj CMakeFiles/MyApp.dir/vendor/imgui/imgui_demo.cpp.obj CMakeFiles/MyApp.dir/vendor/imgui/imgui_draw.cpp.obj CMakeFiles/MyApp.dir/vendor/imgui/imgui_tables.cpp.obj CMakeFiles/MyApp.dir/vendor/imgui/imgui_widgets.cpp.obj | vendor/GLFW/src/libglfw3.a C$:/VulkanSDK/1.3.290.0/Lib/vulkan-1.lib vendor/GLFW/src/libglfw3.a C$:/VulkanSDK/1.3.290.0/Lib/vulkan-1.lib || vendor/GLFW/src/libglfw3.a
   FLAGS = -g
   LINK_LIBRARIES = -lopengl32  vendor/GLFW/src/libglfw3.a  C:/VulkanSDK/1.3.290.0/Lib/vulkan-1.lib  vendor/GLFW/src/libglfw3.a  C:/VulkanSDK/1.3.290.0/Lib/vulkan-1.lib  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
   OBJECT_DIR = CMakeFiles\MyApp.dir
