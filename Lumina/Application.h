@@ -2,6 +2,8 @@
 #define APPLICATION_H
 #define GLFW_INCLUDE_NONE
 #define GLFW_INCLUDE_VULKAN
+#include <functional>
+#include <memory>
 #include <GLFW/glfw3.h>
 #include "TitleBarLayout.h"
 #include <vector>
@@ -14,12 +16,24 @@ public:
 
     // Destructeur
     ~Application();
+
+    void RenderLayouts();
+
+    static void FlushCommandBuffer(VkCommandBuffer commandBuffer);
+
+    static VkCommandBuffer GetCommandBuffer(bool begin);
+
     // Méthodes publiques
     void Run();
-    void RenderLayouts();
     bool IsTitleBarHovered() const { return m_TitleBarHovered; }
+
+    static void SubmitResourceFree(std::function<void()> &&func);
+
     void AddLayout(Layout* layout); // Méthode pour ajouter un layout
-    GLFWwindow *GetWindowHandle() const;
+    GLFWwindow* GetWindowHandle() const;
+
+    static VkPhysicalDevice GetPhysicalDevice();
+    static VkDevice GetDevice();
 
     void InitializeWindow(int width, int height, bool customTitlebar);
 

@@ -21,7 +21,8 @@ add_executable(${PROJECT_NAME} ${SOURCES} main.cpp
         Lumina/Layout.h
         Lumina/Layout.cpp
         Lumina/TitleBarLayout.h
-        Lumina/TitleBarLayout.cpp)
+        Lumina/TitleBarLayout.cpp
+)
 
 # Ajouter les options pour une application console
 set_target_properties(${PROJECT_NAME} PROPERTIES WIN32_EXECUTABLE OFF)
@@ -48,6 +49,14 @@ file(GLOB IMGUI_SOURCES
 )
 target_sources(${PROJECT_NAME} PRIVATE ${IMGUI_SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE ${IMGUI_DIR} ${IMGUI_DIR}/backends)
+
+# Ajouter stb_image
+set(STB_IMAGE_DIR ${APP_SOURCE_DIR}/vendor/stb_image)
+target_include_directories(${PROJECT_NAME} PRIVATE ${STB_IMAGE_DIR})
+
+# Ajouter GLM
+set(GLM_DIR ${APP_SOURCE_DIR}/vendor/glm)
+target_include_directories(${PROJECT_NAME} PRIVATE ${GLM_DIR})
 
 # Liens avec les bibliothèques GLFW et Vulkan
 target_link_libraries(${PROJECT_NAME} glfw Vulkan::Vulkan)

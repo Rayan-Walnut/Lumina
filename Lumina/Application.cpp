@@ -29,6 +29,7 @@ static uint32_t                 g_QueueFamily = static_cast<uint32_t>(-1);
 static VkQueue                  g_Queue = VK_NULL_HANDLE;
 static VkPipelineCache          g_PipelineCache = VK_NULL_HANDLE;
 static VkDescriptorPool         g_DescriptorPool = VK_NULL_HANDLE;
+static std::unordered_map<std::string, ImFont*> s_Fonts;
 
 static ImGui_ImplVulkanH_Window g_MainWindowData;
 static int                      g_MinImageCount = 2;
@@ -455,7 +456,7 @@ void Application::Run() {
 
 void Application::RenderLayouts() {
     for (auto& layout : layouts) {
-        layout->Draw();
+        layout->Draw(g_Device);
     }
 }
 
@@ -467,7 +468,9 @@ GLFWwindow* Application::GetWindowHandle() const {
     return m_WindowHandle;
 }
 
+
 void Application::InitializeWindow(int width, int height, bool customTitlebar) {
+#include "./Embed/Roboto-Regular.embed"
     largeurFenetre = width;
     hauteurFenetre = height;
     CustomTitlebar = customTitlebar;
@@ -539,7 +542,6 @@ void Application::InitializeWindow(int width, int height, bool customTitlebar) {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
-    io.Fonts->AddFontFromFileTTF(obtenirCheminAbsolu(R"(../font/Roboto-Regular.ttf)").c_str(), 16.0f);
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
     ImGui::StyleColorsDark();
@@ -563,10 +565,11 @@ void Application::InitializeWindow(int width, int height, bool customTitlebar) {
     init_info.CheckVkResultFn = check_vk_result;
     ImGui_ImplVulkan_Init(&init_info);
 
-    glfwSetWindowUserPointer(m_WindowHandle, this);
 
-    glfwSetTitlebarHitTestCallback(m_WindowHandle, [](GLFWwindow* window, int x, int y, int* hit) {
-        const auto* app = static_cast<Application*>(glfwGetWindowUserPointer(window));
-        *hit = app->IsTitleBarHovered();
-    });
+    // Load default font
+    ImFontConfig fontConfig;
+    fontConfig.FontDataOwnedByAtlas = false;
+    ImFont* robotoFont = io.Fonts->AddFontFromMemoryTTF((void*)g_RobotoRegular, sizeof(g_RobotoRegular), 16.0f, &fontConfig);
+    s_Fonts["Default"] = robotoFont;
+    io.FontDefault = robotoFont;
 }
